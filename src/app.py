@@ -46,13 +46,24 @@ app.layout = html.Div(
             style={"border-width": "0", "width": "100%", "height": "400px"},
         ),
         "Select Rating Range",
-        dcc.Slider(
+        dcc.RangeSlider(
             id="rating",
             min=0,
             max=10,
             step=0.001,
-            value=7,
+            value=[5,7],
             marks={0: "0", 10: "10"},
+            tooltip={"placement": "bottom", "always_visible": True}
+        ),
+        "Select Runtime",
+        dcc.RangeSlider(
+            id="runtime",
+            min=1,
+            max=960,
+            step=10,
+            value=[60,120],
+            marks={1: "0", 60: "60", 120: "120", 180: "180", 960: "960"},
+            tooltip={"placement": "bottom", "always_visible": True}
         ),
         "Select Genres From the List",
         dcc.Dropdown(
@@ -67,11 +78,13 @@ app.layout = html.Div(
 
 @app.callback(
         Output("barchart", "srcDoc"), 
-        Input("rating", "value"))
-def plot_altair(rating):
+        Input("rating", "value"),
+        Input("runtime", "value"))
+def plot_altair(rating, runtime):
     filtered_movies = (
-        movies.query("vote_average > @rating & revenue > 0 ")
-        .sort_values(["vote_average", "vote_count"])
+        movies.query("vote_average <= @rating[1] & vote_average >= @rating[0]" 
+                     "& runtime <= @runtime[1] & runtime >= @runtime[0] & revenue > 0")
+        .sort_values(["vote_average", "vote_count"], ascending=False)
         .head(10)
     )
 
