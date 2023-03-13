@@ -9,6 +9,31 @@ import numpy as np
 # load data
 movies = pd.read_csv("../data/clean/tmdb_movies_clean.csv")
 
+# genre list
+# genre_list = list(movies.explode("genres")["genres"].unique())
+
+genre_list = [
+    "Horror",
+    "Mystery",
+    "Thriller",
+    "Action",
+    "Adventure",
+    "Animation",
+    "Comedy",
+    "Family",
+    "Science Fiction",
+    "Drama",
+    "War",
+    "History",
+    "Crime",
+    "Romance",
+    "Fantasy",
+    "Documentary",
+    "Music",
+    "TV Movie",
+    "Western",
+]
+
 # app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app = dash.Dash(
     __name__, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"]
@@ -21,23 +46,34 @@ app.layout = html.Div(
             style={"border-width": "0", "width": "100%", "height": "400px"},
         ),
         "Select Rating Range",
-        dcc.RangeSlider(
-            id="vote_slider",
+        dcc.Slider(
+            id="rating",
             min=0,
             max=10,
             step=0.001,
-            value=[0, 10],
+            value=7,
             marks={0: "0", 10: "10"},
+        ),
+        "Select Genres From the List",
+        dcc.Dropdown(
+            # options=[{"label": i, "value": i} for i in genre_list],
+            options=genre_list,
+            multi=True,
+            placeholder="Select a Genre",
         ),
     ]
 )
 
 
-@app.callback(Output("barchart", "srcDoc"), Input("vote_slider", "value"))
-def plot_altair(max_vote, df=movies.copy()):
-    filtered_movies = df.query("vote_average > @max_vote & revenue > 0 ").sort_values(
-        ["vote_average", "vote_count"]
-    )[0:10]
+@app.callback(
+        Output("barchart", "srcDoc"), 
+        Input("rating", "value"))
+def plot_altair(rating):
+    filtered_movies = (
+        movies.query("vote_average > @rating & revenue > 0 ")
+        .sort_values(["vote_average", "vote_count"])
+        .head(10)
+    )
 
     tooltips = [
         alt.Tooltip("overview", title="Synopsis"),
