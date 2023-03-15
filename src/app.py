@@ -1,3 +1,5 @@
+import os 
+
 from dash import dash, html, dcc, Input, Output
 import altair as alt
 import pandas as pd
@@ -7,32 +9,34 @@ import numpy as np
 
 
 # load data
-movies = pd.read_csv("../data/clean/tmdb_movies_clean.csv")
+# movies = pd.read_csv("../data/clean/tmdb_movies_clean.csv")
+movies = pd.read_csv(os.path.join(os.pardir,"data","clean","tmdb_movies_clean.csv"))
+# movies['genres'] = str(movies['genres'])
 
-# genre list
-# genre_list = list(movies.explode("genres")["genres"].unique())
+# genre_list = movies.explode('genres')["genres"].unique()
+# genre_list = sorted(movies.explode('genres')['genres'].unique())
 
 genre_list = [
-    "Horror",
-    "Mystery",
-    "Thriller",
-    "Action",
-    "Adventure",
-    "Animation",
-    "Comedy",
-    "Family",
-    "Science Fiction",
-    "Drama",
-    "War",
-    "History",
-    "Crime",
-    "Romance",
-    "Fantasy",
-    "Documentary",
-    "Music",
-    "TV Movie",
-    "Western",
-]
+ 'Action',
+ 'Adventure',
+ 'Animation',
+ 'Comedy',
+ 'Crime',
+ 'Documentary',
+ 'Drama',
+ 'Family',
+ 'Fantasy',
+ 'History',
+ 'Horror',
+ 'Music',
+ 'Mystery',
+ 'Romance',
+ 'Science Fiction',
+ 'TV Movie',
+ 'Thriller',
+ 'War',
+ 'Western']
+
 
 # app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app = dash.Dash(
@@ -68,9 +72,12 @@ app.layout = html.Div(
         "Select Genres From the List",
         dcc.Dropdown(
             # options=[{"label": i, "value": i} for i in genre_list],
+            id='selected_genre',
             options=genre_list,
-            multi=True,
-            placeholder="Select a Genre",
+            # multi=True,
+            # value= 'Drama',
+            # clearable=False,
+            placeholder="Select a Genre"
         ),
     ]
 )
@@ -78,21 +85,48 @@ app.layout = html.Div(
 
 @app.callback(
         Output("barchart", "srcDoc"), 
+        [Input("selected_genre", "value"),
         Input("rating", "value"),
-        Input("runtime", "value"))
-def plot_altair(rating, runtime):
-    filtered_movies = (
-        movies.query("vote_average <= @rating[1] & vote_average >= @rating[0]" 
-                     "& runtime <= @runtime[1] & runtime >= @runtime[0] & revenue > 0")
-        .sort_values(["vote_average", "vote_count"], ascending=False)
-        .head(10)
-    )
+        Input("runtime", "value")]
+        )
+def plot_altair(selected_genre, rating, runtime):
 
+
+    if  selected_genre == None:
+        filtered_movies =  (
+                    movies.
+                    query(
+                        "vote_average <= @rating[1] & " 
+                        "vote_average >= @rating[0] & " 
+                        "runtime <= @runtime[1] & "
+                        "runtime >= @runtime[0] & " 
+                        "revenue > 0")
+                        .sort_values(["vote_average", "vote_count"], ascending=False)
+                        .head(10)
+                        )     
+
+    else:
+        print(selected_genre, type(selected_genre), movies.columns, type(movies["genres"][0]))
+        filtered_movies = (
+                    movies
+                    .query(
+                        "vote_average <= @rating[1] & "
+                        "vote_average >= @rating[0] & " 
+                        "runtime <= @runtime[1] & "
+                        "runtime >= @runtime[0] & revenue > 0"
+                    )
+                    .loc[movies['genre_list'].str.contains(selected_genre),:]
+                    .sort_values(["vote_average", "vote_count"], ascending=False)
+                    .head(10)
+                    )
+
+   
     tooltips = [
         alt.Tooltip("overview", title="Synopsis"),
         alt.Tooltip("runtime", title="Runtime (mins)"),
         alt.Tooltip("revenue", title="Gross Revenue (USD)"),
         alt.Tooltip("vote_count", title="Votes"),
+        alt.Tooltip("genre_list", title="Genres"),
     ]
 
     bar_chart = (
