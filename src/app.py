@@ -59,10 +59,10 @@ app.layout = html.Div(
         dcc.RangeSlider(
             id="runtime",
             min=1,
-            max=960,
+            max=300,
             step=10,
             value=[60,120],
-            marks={1: "0", 60: "60", 120: "120", 180: "180", 960: "960"},
+            marks={1: "0", 60: "60", 120: "120", 180: "180", 240: "240", 300: "300"},
             tooltip={"placement": "bottom", "always_visible": True}
         ),
         "Select Genres From the List",
