@@ -9,12 +9,8 @@ import dash_bootstrap_components as dbc
 
 
 # load data
-# movies = pd.read_csv("../data/clean/tmdb_movies_clean.csv")
 movies = pd.read_csv(os.path.join(os.pardir,"data","clean","tmdb_movies_clean.csv"))
-# movies['genres'] = str(movies['genres'])
 
-# genre_list = movies.explode('genres')["genres"].unique()
-# genre_list = sorted(movies.explode('genres')['genres'].unique())
 
 genre_list = [
  'Action',
