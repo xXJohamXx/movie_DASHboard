@@ -11,7 +11,6 @@ import dash_bootstrap_components as dbc
 # load data
 movies = pd.read_csv(os.path.join(os.pardir,"data","clean","tmdb_movies_clean.csv"))
 
-
 genre_list = [
  'Action',
  'Adventure',
@@ -119,16 +118,17 @@ def plot_altair(selected_genre, rating, runtime):
                     )
 
 
-    tooltips = [filtered_movies['overview'], filtered_movies['runtime'],
+    tooltips = [filtered_movies['overview'].str.wrap(50).apply(lambda x: x.replace('\n', '<br>')), 
+                filtered_movies['runtime'],
                 filtered_movies['revenue'], filtered_movies['genre_list'],
                 filtered_movies['vote_count']
     ]
 
-    hovertemp = ('Synopsis: %{tooltips[0]}<br>' +
-                               'Runtime (mins): %{tooltips[1]}<br>' +
-                               'Gross Revenue (USD): %{tooltips[2]:.2f}<br>' +
-                               'TGenres: %{tooltips[3]:.2f}<br>' +
-                               'Votes: %{tooltips[4]:.2f}<br>')
+    hovertemp = ('Synopsis: <br>%{customdata[0]}<br><br>' +
+                               'Runtime (mins): %{customdata[1]}<br>' +
+                               'Gross Revenue (USD): %{customdata[2]:.2f}<br>' +
+                               'Genres: %{customdata[3]}<br>' +
+                               'Votes: %{customdata[4]:.2f}<extra></extra>')
 
 
 
@@ -137,6 +137,7 @@ def plot_altair(selected_genre, rating, runtime):
                  labels= {"vote_count" : "Average Number of Votes",
                           "title" : "Movie Title",
                           "vote_average" : "Average Vote Score" },
+                # hover_data=
                 # barmode= "group",
                 custom_data=tooltips
                           )
