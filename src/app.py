@@ -32,57 +32,128 @@ genre_list = [
  'War',
  'Western']
 
+data_table_columns = [
+    'title', 'tagline', 'genre_list', 'vote_average','runtime', 
+    'release_date', 'budget', 'revenue','production_companies', 
+    'recommendations']
+
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
-# app = dash.Dash(
-#     __name__, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-# )
 
-app.layout = html.Div(
-    [
-        # html.Iframe(
-        #     id="barchart",
-        #     style={"border-width": "0", "width": "100%", "height": "400px"},
-        # ),
-        dcc.Graph(id='bar-chart',
-                  style={"border-width": "0", "width": "100%", "height": "400px"}),
-        "Select Rating Range",
-        dcc.RangeSlider(
-            id="rating",
-            min=0,
-            max=10,
-            step=0.001,
-            value=[5,7],
-            marks={0: "0", 10: "10"},
-            tooltip={"placement": "bottom", "always_visible": True}
-        ),
-        "Select Runtime",
-        dcc.RangeSlider(
-            id="runtime",
-            min=1,
-            max=300,
-            step=10,
-            value=[60,120],
-            marks={1: "0", 60: "60", 120: "120", 180: "180", 240: "240", 300: "300"},
-            tooltip={"placement": "bottom", "always_visible": True}
-        ),
-        "Select Genres From the List",
-        dcc.Dropdown(
-            # options=[{"label": i, "value": i} for i in genre_list],
-            id='selected_genre',
-            options=genre_list,
-            # multi=True,
-            # value= 'Drama',
-            # clearable=False,
-            placeholder="Select a Genre"
-        ),
-    ]
-)
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col([
+            html.H1("Movie Explorer Dashboard",
+                        className='text-center')
+        ], width=12),
+    
+    ]),
+
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(
+                id='bar-chart',
+                style={"border-width": "0", "width": "100%", "height": "400px"}
+            ),
+        ], width=12)
+        
+    ]),
+
+    dbc.Row([
+        dbc.Col([
+        #     dcc.Graph(
+        #         id='bar-chart',
+        #         # style={"border-width": "0", "width": "100%", "height": "400px"}
+        #     ),
+
+            html.Label('Select a Rating Range'
+            ),
+
+            dcc.RangeSlider(
+                id="rating",
+                min=0,
+                max=10,
+                step=0.01,
+                value=[5,7.5],
+                marks={0: "0", 10: "10"},
+                tooltip={"placement": "bottom", "always_visible": True}
+            ),
+
+            html.Label('Select Runtime Range'       
+            ),
+
+            dcc.RangeSlider(
+                id="runtime",
+                min=1,
+                max=300,
+                step=5,
+                value=[60,120],
+                marks={1: "0", 60: "60", 120: "120", 180: "180", 240: "240", 300: "300"},
+                tooltip={"placement": "bottom", "always_visible": True}
+            ),
+
+            html.Label('Select a Genre From The List'       
+            ),
+
+            dcc.Dropdown(
+                id='selected_genre',
+                options=genre_list,
+                placeholder="Select a Genre"
+            )
+    ], width= 4),
+
+        dbc.Col([
+            dash_table.DataTable(
+            id='datatable',
+            columns=[{'name': col, 'id': col} for col in data_table_columns],
+            data=[],
+            sort_action='native',
+            # style_data={
+            #     'whiteSpace': 'normal',
+            #     # 'height': 'auto',
+            #     'lineHeight': '15px'
+            # },
+            page_size=10,
+
+            style_table={'overflowX': 'auto'},
+
+            style_cell={'textAlign': 'center'} # left align text in columns for readability
+
+            )   
+    
+        ], width=8)
+
+        # dbc.Col([
+        #     dash_table.DataTable(
+        #     id='datatable',
+        #     columns=[{'name': col, 'id': col} for col in data_table_columns],
+        #     data=[],
+        #     sort_action='native',
+        #     # style_data={
+        #     #     'whiteSpace': 'normal',
+        #     #     # 'height': 'auto',
+        #     #     'lineHeight': '15px'
+        #     # },
+        #     page_size=10,
+
+        #     style_table={'overflowX': 'auto'},
+
+        #     style_cell={'textAlign': 'center'} # left align text in columns for readability
+
+        #     )   
+    
+        # ], width=5)
+    
+    ]),
+
+], fluid=True)
+
 
 
 @app.callback(
         # Output("barchart", "srcDoc"), 
         Output('bar-chart', 'figure'),
+        Output('datatable', 'data'),
         [Input("selected_genre", "value"),
         Input("rating", "value"),
         Input("runtime", "value")]
@@ -116,6 +187,8 @@ def plot_altair(selected_genre, rating, runtime):
                     .sort_values(["vote_average", "vote_count"], ascending=False)
                     .head(10)
                     )
+        
+    data_table = filtered_movies[data_table_columns].to_dict('records')
 
 
     tooltips = [filtered_movies['overview'].str.wrap(50).apply(lambda x: x.replace('\n', '<br>')), 
@@ -124,11 +197,11 @@ def plot_altair(selected_genre, rating, runtime):
                 filtered_movies['vote_count']
     ]
 
-    hovertemp = ('Synopsis: <br>%{customdata[0]}<br><br>' +
-                               'Runtime (mins): %{customdata[1]}<br>' +
-                               'Gross Revenue (USD): %{customdata[2]:.2f}<br>' +
-                               'Genres: %{customdata[3]}<br>' +
-                               'Votes: %{customdata[4]:.2f}<extra></extra>')
+    hovertemp = ('<b>Synopsis</b>: <br>%{customdata[0]}<br><br>' +
+                               '<b>Runtime (mins)</b>: %{customdata[1]}<br>' +
+                               '<b>Gross Revenue (USD)</b>: $%{customdata[2]:,}<br>' +
+                               '<b>Genres</b> %{customdata[3]}<br>' +
+                               '<b>Votes</b>: %{customdata[4]}<extra></extra>')
 
 
 
@@ -141,7 +214,7 @@ def plot_altair(selected_genre, rating, runtime):
                 # barmode= "group",
                 custom_data=tooltips
                           )
-    fig.update_layout(barmode='group', xaxis={'categoryorder':'total ascending'})
+    # fig.update_layout(barmode='stack', xaxis={'categoryorder':'total descending'})
     # Set the custom hover text labels
 
     fig.update_traces(hovertemplate=hovertemp)
@@ -158,7 +231,7 @@ def plot_altair(selected_genre, rating, runtime):
 
 
 
-    return fig
+    return (fig, data_table)
 
 
 if __name__ == "__main__":
