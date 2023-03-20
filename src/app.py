@@ -3,38 +3,21 @@ import os
 from dash import dash, html, dcc, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
-# import numpy as np
 import dash_bootstrap_components as dbc
 
 
 # load data
 movies = pd.read_csv(os.path.join(os.pardir,"data","clean","tmdb_movies_clean.csv"))
 
-genre_list = [
- 'Action',
- 'Adventure',
- 'Animation',
- 'Comedy',
- 'Crime',
- 'Documentary',
- 'Drama',
- 'Family',
- 'Fantasy',
- 'History',
- 'Horror',
- 'Music',
- 'Mystery',
- 'Romance',
- 'Science Fiction',
- 'TV Movie',
- 'Thriller',
- 'War',
- 'Western']
+genre_list = [ 'Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary',
+               'Drama', 'Family', 'Fantasy', 'History','Horror', 'Music', 'Mystery',
+               'Romance','Science Fiction','TV Movie','Thriller','War','Western']
 
 data_table_columns = [
-    'title', 'tagline', 'genre_list', 'vote_average','runtime', 
-    'release_date', 'budget', 'revenue','production_companies', 
-    'recommendations']
+    'title','recommendations', 'vote_average','runtime', 
+    'release_date', 'budget', 'revenue', 'tagline', 'genre_list',
+    'production_companies', 
+    ]
 
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
@@ -90,7 +73,7 @@ app.layout = dbc.Container([
                 placeholder="Select a Genre"
             ),
             html.Br(),
-            html.A(html.Button('Click To Reset All Filters'),href='/'),
+            html.A(html.Button('Click To Refresh Page and Reset All Filters'),href='/'),
     
         ], width = 3)
     
@@ -114,9 +97,8 @@ app.layout = dbc.Container([
                         page_action='native',
                         page_current= 0,
                         page_size=20,
-
+                        style_data={'whiteSpace': 'normal','height': 'auto',},
                         style_table={'overflowX': 'auto'},
-
                         style_cell={'textAlign': 'center'} # left align text in columns for readability
 
             )   
@@ -136,7 +118,7 @@ app.layout = dbc.Container([
         Input("rating", "value"),
         Input("runtime", "value")]
         )
-def plot_altair(selected_genre, rating, runtime):
+def plot_table(selected_genre, rating, runtime):
 
 
     if  selected_genre == None:
