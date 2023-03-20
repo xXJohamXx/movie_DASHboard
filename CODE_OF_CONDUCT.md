@@ -40,7 +40,7 @@ Project maintainers commit themselves to fairly and consistently applying these 
 
 ## ENFORCEMENT 
 
-Any incident of harassment or unacceptable behavior can be reported to the team members by contacting at yaouhu@student.ubc.ca, mehwishbhat.ubc@gmail.com. After reviewing the complaint , the project team will take any steps deemed necessary. The privacy of the complaint is to be maintained by the project team.
+Any incident of harassment or unacceptable behavior can be reported to the team members by contacting jonah.hamilton@alumni.ubc.ca, . After reviewing the complaint , the project team will take any steps deemed necessary. The privacy of the complaint is to be maintained by the project team.
 
 
 ## ATTRIBUTION 
