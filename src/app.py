@@ -39,7 +39,7 @@ data_table_columns = [
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
 
-# server = app.server
+server = app.server
 
 app.layout = dbc.Container([
     dbc.Row([
@@ -113,11 +113,6 @@ app.layout = dbc.Container([
                         selected_columns=[],
                         page_action='native',
                         page_current= 0,
-                        # style_data={
-                 #     'whiteSpace': 'normal',
-                 #     # 'height': 'auto',
-                #     'lineHeight': '15px'
-                         # },
                         page_size=20,
 
                         style_table={'overflowX': 'auto'},
@@ -135,7 +130,6 @@ app.layout = dbc.Container([
 
 
 @app.callback(
-        # Output("barchart", "srcDoc"), 
         Output('bar-chart', 'figure'),
         Output('datatable', 'data'),
         [Input("selected_genre", "value"),
@@ -196,8 +190,6 @@ def plot_altair(selected_genre, rating, runtime):
                  labels= {"vote_count" : "Average Number of Votes",
                           "title" : "Movie Title",
                           "vote_average" : "Average Score" },
-                # hover_data=
-                # barmode= "group",
                 custom_data=tooltips
                           )
     fig.update_layout(
