@@ -14,7 +14,7 @@ movies = pd.read_csv(os.path.join(os.pardir,"data","raw","tmdb_movies.csv"))
 # pre-process csv for dashboard
 movies = (
     movies.drop(columns=["popularity", "backdrop_path"])
-    .dropna(subset=["genres", "runtime", "release_date"])
+    .dropna(subset=["genres", "runtime", "release_date", "overview"])
     .assign(
         release_date=pd.to_datetime(movies["release_date"]),
         production_companies=movies["production_companies"].str.split("-"),
@@ -22,6 +22,7 @@ movies = (
         credits=movies["credits"].str.split("-"),
         keywords=movies["keywords"].str.split("-"),
         recommendations=movies["recommendations"].str.split("-"),
+        vote_average=movies['vote_average'].round(2)
     )
     .reset_index(drop=True)
 )
