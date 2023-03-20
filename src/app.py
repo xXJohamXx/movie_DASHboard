@@ -2,9 +2,8 @@ import os
 
 from dash import dash, html, dcc, Input, Output, dash_table
 import plotly.express as px
-import altair as alt
 import pandas as pd
-import numpy as np
+# import numpy as np
 import dash_bootstrap_components as dbc
 
 
@@ -39,6 +38,8 @@ data_table_columns = [
 
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+
+# server = app.server
 
 app.layout = dbc.Container([
     dbc.Row([
@@ -100,20 +101,28 @@ app.layout = dbc.Container([
             html.H3("Explore The Movies!",
                    className='text-center'),
             dash_table.DataTable(
-            id='datatable',
-            columns=[{'name': col, 'id': col} for col in data_table_columns],
-            data=[],
-            sort_action='native',
-            # style_data={
-            #     'whiteSpace': 'normal',
-            #     # 'height': 'auto',
-            #     'lineHeight': '15px'
-            # },
-            page_size=10,
+                        id='datatable',
+                        columns=[{'name': col, 'id': col} for col in data_table_columns],
+                        data=[],
+                        editable=True,
+                        sort_action='native',
+                        sort_mode= 'multi',
+                        row_selectable='multi',
+                        row_deletable=True,
+                        selected_rows=[],
+                        selected_columns=[],
+                        page_action='native',
+                        page_current= 0,
+                        # style_data={
+                 #     'whiteSpace': 'normal',
+                 #     # 'height': 'auto',
+                #     'lineHeight': '15px'
+                         # },
+                        page_size=20,
 
-            style_table={'overflowX': 'auto'},
+                        style_table={'overflowX': 'auto'},
 
-            style_cell={'textAlign': 'center'} # left align text in columns for readability
+                        style_cell={'textAlign': 'center'} # left align text in columns for readability
 
             )   
     
@@ -145,8 +154,6 @@ def plot_altair(selected_genre, rating, runtime):
                         "runtime <= @runtime[1] & "
                         "runtime >= @runtime[0] & " 
                         "revenue > 0")
-                        .sort_values(["vote_average", "vote_count"], ascending=False)
-                        .head(10)
                         )     
 
     else:
@@ -159,17 +166,22 @@ def plot_altair(selected_genre, rating, runtime):
                         "runtime >= @runtime[0] & revenue > 0"
                     )
                     .loc[movies['genres'].str.contains(selected_genre),:]
-                    .sort_values(["vote_average", "vote_count"], ascending=False)
-                    .head(10)
                     )
         
     data_table = filtered_movies[data_table_columns].to_dict('records')
 
+    # get top 10 movies to plot and create tooltips
+    barplot_movies = (
+                filtered_movies
+                .sort_values(["vote_average", "vote_count"], ascending=[False, False])
+                .head(10)
+    )
 
-    tooltips = [filtered_movies['overview'].str.wrap(50).apply(lambda x: x.replace('\n', '<br>')), 
-                filtered_movies['runtime'],
-                filtered_movies['revenue'], filtered_movies['genre_list'],
-                filtered_movies['vote_count']
+    tooltips = [barplot_movies['overview'].str.wrap(50).apply(lambda x: x.replace('\n', '<br>')), 
+                barplot_movies['runtime'],
+                barplot_movies['revenue'], 
+                barplot_movies['genre_list'],
+                barplot_movies['vote_count']
     ]
 
     hovertemp = ('<b>Synopsis</b>: <br>%{customdata[0]}<br><br>' +
@@ -179,8 +191,8 @@ def plot_altair(selected_genre, rating, runtime):
                                '<b>Votes</b>: %{customdata[4]}<extra></extra>')
 
 
-
-    fig = px.bar(filtered_movies, x="vote_count", y='title', color='vote_average',
+    fig = px.bar(barplot_movies, 
+                 x="vote_count", y='title', color='vote_average',
                  labels= {"vote_count" : "Average Number of Votes",
                           "title" : "Movie Title",
                           "vote_average" : "Average Score" },
@@ -194,23 +206,10 @@ def plot_altair(selected_genre, rating, runtime):
         'y':0.9,
         'x':0.5,
         'xanchor': 'center',
-        'yanchor': 'top'})
+        'yanchor': 'top'}
+    )
     
-    # fig.update_layout(barmode='stack', xaxis={'categoryorder':'total descending'})
-    # Set the custom hover text labels
     fig.update_traces(hovertemplate=hovertemp)
-    # fig.update_layout(yaxis=dict(autorange="reversed"))
-    
-
-        # Set the plot layout
-    # fig.update_layout(
-    #     margin=dict(l=20, r=20, t=30, b=20),
-    #     xaxis_title='Fruit',
-    #     yaxis_title='Count',
-    #     font=dict(size=12)
-    # )
-
-
 
     return (fig, data_table)
 
