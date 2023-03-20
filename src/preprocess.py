@@ -27,5 +27,20 @@ movies = (
     .reset_index(drop=True)
 )
 
+#create dictionary of movie ids and titles
+movie_id = dict(zip(list(movies["id"]), list(movies["title"])))
+
+#repace movie reccomendation ids with movie titles
+for i in range(len(movies)):
+    for j in range(len(movies['recommendations'][i])):
+
+        if int(movies['recommendations'][i][j]) in movie_id.keys():
+            movies['recommendations'][i][j] = movie_id[int(movies['recommendations'][i][j])] 
+        else:
+            movies['recommendations'][i][j] = np.nan
+
+#remove nan values  keep original values from df column of lists
+movies['recommendations'] = movies['recommendations'].apply(lambda x: [item for item in x if item is not np.nan])
+
 # movies.to_csv("../data/clean/tmdb_movies_clean.csv")
 movies.to_csv(os.path.join(os.pardir,"data", "clean", "tmdb_movies_clean.csv"))
