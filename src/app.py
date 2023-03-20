@@ -44,31 +44,20 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.H1("Movie Explorer Dashboard",
-                        className='text-center')
-        ], width=12),
-    
-    ]),
-
-    dbc.Row([
-        dbc.Col([
+                        className='text-center'),
             dcc.Graph(
                 id='bar-chart',
                 style={"border-width": "0", "width": "100%", "height": "400px"}
             ),
-        ], width=12)
-        
-    ]),
+        ], width={'size':11}),
+
+
+    ], justify='center'),
 
     dbc.Row([
         dbc.Col([
-        #     dcc.Graph(
-        #         id='bar-chart',
-        #         # style={"border-width": "0", "width": "100%", "height": "400px"}
-        #     ),
-
             html.Label('Select a Rating Range'
             ),
-
             dcc.RangeSlider(
                 id="rating",
                 min=0,
@@ -78,10 +67,8 @@ app.layout = dbc.Container([
                 marks={0: "0", 10: "10"},
                 tooltip={"placement": "bottom", "always_visible": True}
             ),
-
             html.Label('Select Runtime Range'       
             ),
-
             dcc.RangeSlider(
                 id="runtime",
                 min=1,
@@ -91,18 +78,27 @@ app.layout = dbc.Container([
                 marks={1: "0", 60: "60", 120: "120", 180: "180", 240: "240", 300: "300"},
                 tooltip={"placement": "bottom", "always_visible": True}
             ),
+        ], width= 7),
 
+        dbc.Col([
             html.Label('Select a Genre From The List'       
             ),
-
             dcc.Dropdown(
                 id='selected_genre',
                 options=genre_list,
                 placeholder="Select a Genre"
-            )
-    ], width= 4),
+            ),
+            html.Br(),
+            html.A(html.Button('Click To Reset All Filters'),href='/'),
+    
+        ], width = 3)
+    
+    ], justify="center"),
 
+    dbc.Row([
         dbc.Col([
+            html.H3("Explore The Movies!",
+                   className='text-center'),
             dash_table.DataTable(
             id='datatable',
             columns=[{'name': col, 'id': col} for col in data_table_columns],
@@ -121,30 +117,9 @@ app.layout = dbc.Container([
 
             )   
     
-        ], width=8)
+        ], width= 12)
+    ])
 
-        # dbc.Col([
-        #     dash_table.DataTable(
-        #     id='datatable',
-        #     columns=[{'name': col, 'id': col} for col in data_table_columns],
-        #     data=[],
-        #     sort_action='native',
-        #     # style_data={
-        #     #     'whiteSpace': 'normal',
-        #     #     # 'height': 'auto',
-        #     #     'lineHeight': '15px'
-        #     # },
-        #     page_size=10,
-
-        #     style_table={'overflowX': 'auto'},
-
-        #     style_cell={'textAlign': 'center'} # left align text in columns for readability
-
-        #     )   
-    
-        # ], width=5)
-    
-    ]),
 
 ], fluid=True)
 
@@ -206,17 +181,23 @@ def plot_altair(selected_genre, rating, runtime):
 
 
     fig = px.bar(filtered_movies, x="vote_count", y='title', color='vote_average',
-                 title= "Top 10 Rated Movies",
                  labels= {"vote_count" : "Average Number of Votes",
                           "title" : "Movie Title",
-                          "vote_average" : "Average Vote Score" },
+                          "vote_average" : "Average Score" },
                 # hover_data=
                 # barmode= "group",
                 custom_data=tooltips
                           )
+    fig.update_layout(
+    title={
+        'text': "Top 10 Movies By Rating",
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'})
+    
     # fig.update_layout(barmode='stack', xaxis={'categoryorder':'total descending'})
     # Set the custom hover text labels
-
     fig.update_traces(hovertemplate=hovertemp)
     # fig.update_layout(yaxis=dict(autorange="reversed"))
     
