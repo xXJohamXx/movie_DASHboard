@@ -146,11 +146,11 @@ def plot_table(selected_genre, rating, runtime):
         
     data_table = filtered_movies[data_table_columns].to_dict('records')
 
-    # get top 10 movies to plot and create tooltips
+    # get top 10 movies to plot and create tooltips, take the tail to make sure order is correct
     barplot_movies = (
                 filtered_movies
-                .sort_values(["vote_average", "vote_count"], ascending=[False, False])
-                .head(10)
+                .sort_values(["vote_average", "vote_count"], ascending=[True, True])
+                .tail(10)
     )
 
     tooltips = [barplot_movies['overview'].str.wrap(50).apply(lambda x: x.replace('\n', '<br>')), 
